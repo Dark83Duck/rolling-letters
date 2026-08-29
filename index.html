@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>우리들의 마음 우체국 💌</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Nanum+Myeongjo:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.4/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #fbf7ee 0%, #f4ede4 50%, #e9e4dc 100%);
+      --primary: #3b2d20;
+      --accent-heart: #e53e3e;
+      --rope-color: #8c6d46;
+      --clip-color: #d4a373;
+      --clip-shadow: #bc6c25;
+      --text-main: #1a202c;
+      --text-sub: #5a6a85;
+      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.06);
+      --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.08), 0 3px 6px rgba(0, 0, 0, 0.04);
+      --shadow-lg: 0 16px 24px rgba(0, 0, 0, 0.12), 0 6px 10px rgba(0, 0, 0, 0.06);
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      padding-bottom: env(safe-area-inset-bottom, 20px);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Header */
+    .header {
+      padding: 32px 20px 16px;
+      text-align: center;
+      position: relative;
+      z-index: 10;
+    }
+
+    .title-container h1 {
+      font-family: 'Gaegu', cursive;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      font-size: 1rem;
+      color: var(--text-sub);
+      margin-top: 6px;
+      font-weight: 500;
+    }
+
+    /* Board Area - Multi-row Vertical Scrollable Grid */
+    .board-container {
+      flex: 1;
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 36px 32px 130px;
+      position: relative;
+    }
+
+    /* Responsive Grid: Desktop Default */
+    .letters-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 64px 32px;
+      padding-top: 10px;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Letter Card */
+    .letter-card {
+      width: 100%;
+      min-height: 260px;
+      background: #fff6b8;
+      border-radius: 4px 16px 16px 16px;
+      padding: 26px 18px 16px;
+      position: relative;
+      box-shadow: var(--shadow-md);
+      cursor: pointer;
+      transform-origin: top center;
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      animation: letterSway ease-in-out infinite alternate;
+      border: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    /* Clothesline Rope connecting cards horizontally in rows */
+    .letter-card::before {
+      content: '';
+      position: absolute;
+      top: 0px;
+      left: -32px;
+      right: -32px;
+      height: 4px;
+      background: repeating-linear-gradient(
+        45deg,
+        var(--rope-color),
+        var(--rope-color) 8px,
+        #6d5130 8px,
+        #6d5130 16px
+      );
+      box-shadow: 0 3px 5px rgba(0, 0, 0, 0.12);
+      border-radius: 2px;
+      z-index: 1;
+    }
+
+    .letter-card:hover {
+      transform: translateY(-8px) scale(1.03) !important;
+      box-shadow: var(--shadow-lg);
+      z-index: 5;
+    }
+
+    /* Wooden Clip */
+    .wooden-clip {
+      position: absolute;
+      top: -16px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 15px;
+      height: 34px;
+      background: var(--clip-color);
+      border-radius: 3px;
+      box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.25);
+      z-index: 3;
+    }
+    .wooden-clip::after {
+      content: '';
+      position: absolute;
+      top: 11px;
+      left: 1px;
+      right: 1px;
+      height: 3px;
+      background: #7f5539;
+      border-radius: 1px;
+    }
+
+    /* Cute Sticker Badge */
+    .cute-sticker {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      font-size: 1.45rem;
+      line-height: 1;
+      filter: drop-shadow(1px 2px 3px rgba(0, 0, 0, 0.15));
+      transform: rotate(var(--sticker-rot, 6deg));
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 3;
+      user-select: none;
+    }
+    .letter-card:hover .cute-sticker {
+      transform: rotate(var(--sticker-rot, 6deg)) scale(1.25);
+    }
+
+    /* Sparkle Twinkle Animation (Golden & Rose Warm Glow) */
+    .sparkle-twinkle {
+      position: absolute;
+      font-size: 0.95rem;
+      pointer-events: none;
+      z-index: 4;
+      filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.85));
+      animation: sparkleFloat 2.6s ease-in-out infinite alternate;
+    }
+    @keyframes sparkleFloat {
+      0% { opacity: 0.1; transform: translateY(0) scale(0.6) rotate(0deg); }
+      50% { opacity: 0.95; transform: translateY(-5px) scale(1.25) rotate(20deg); }
+      100% { opacity: 0.2; transform: translateY(-10px) scale(0.7) rotate(-15deg); }
+    }
+
+    /* Card Content */
+    .letter-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      border-bottom: 1px dashed rgba(0, 0, 0, 0.18);
+      padding-bottom: 8px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .author-name {
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: #241a10;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 120px;
+    }
+
+    .relation-badge {
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: rgba(0, 0, 0, 0.07);
+      padding: 3px 8px;
+      border-radius: 12px;
+      color: #4a3e35;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 75px;
+    }
+
+    .letter-body {
+      font-family: 'Nanum Myeongjo', serif;
+      font-size: 1rem;
+      line-height: 1.7;
+      color: #2c251e;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 6;
+      -webkit-box-orient: vertical;
+      word-break: keep-all;
+      overflow-wrap: anywhere;
+      flex: 1;
+      position: relative;
+      z-index: 2;
+    }
+
+    .letter-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 14px;
+      padding-top: 8px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .like-btn {
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.9rem;
+      color: #3b2d20;
+      font-weight: 700;
+      padding: 6px 12px;
+      min-height: 36px;
+      border-radius: 16px;
+      transition: background 0.15s, transform 0.15s;
+    }
+    .like-btn:active {
+      transform: scale(1.15);
+    }
+    .like-icon {
+      color: var(--accent-heart);
+      font-size: 1.15rem;
+    }
+
+    .created-date {
+      font-size: 0.78rem;
+      color: #6b6158;
+      font-weight: 500;
+    }
+
+    /* Sway Animation */
+    @keyframes letterSway {
+      0% { transform: rotate(-1.6deg); }
+      100% { transform: rotate(1.8deg); }
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 90px 20px;
+      color: var(--text-sub);
+    }
+    .empty-icon {
+      font-size: 3.8rem;
+      margin-bottom: 14px;
+    }
+
+    /* Floating Write Button */
+    .floating-write-btn {
+      position: fixed;
+      bottom: max(24px, env(safe-area-inset-bottom, 24px));
+      right: 24px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 15px 26px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 10px 22px rgba(59, 45, 32, 0.35);
+      cursor: pointer;
+      z-index: 99;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .floating-write-btn:hover {
+      background: #251b11;
+      transform: translateY(-2px);
+    }
+    .floating-write-btn:active {
+      transform: scale(0.96);
+    }
+
+    /* Modals Overlay */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(5px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      padding: 16px;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 520px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      padding: 26px;
+      position: relative;
+      transform: translateY(20px) scale(0.95);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .modal-title {
+      font-family: 'Gaegu', cursive;
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .modal-close-btn {
+      background: none;
+      border: none;
+      font-size: 1.7rem;
+      color: #888;
+      cursor: pointer;
+      padding: 6px;
+      line-height: 1;
+      border-radius: 50%;
+      min-width: 38px;
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Form Fields */
+    .form-group {
+      margin-bottom: 18px;
+    }
+    .form-label {
+      display: block;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+    .form-input, .form-textarea {
+      width: 100%;
+      padding: 13px 15px;
+      border: 1.5px solid #d2d6dc;
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 1rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-input:focus, .form-textarea:focus {
+      outline: none;
+      border-color: #8c6d46;
+      box-shadow: 0 0 0 3px rgba(140, 109, 70, 0.15);
+    }
+    .form-textarea {
+      min-height: 130px;
+      resize: vertical;
+      line-height: 1.65;
+    }
+    .char-count {
+      text-align: right;
+      font-size: 0.85rem;
+      color: var(--text-sub);
+      margin-top: 5px;
+    }
+
+    /* Color Picker */
+    .color-options {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .color-option {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+    .color-option:hover {
+      transform: scale(1.1);
+    }
+    .color-option.selected {
+      border-color: #3b2d20;
+      transform: scale(1.15);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    }
+
+    /* Buttons */
+    .btn-primary {
+      width: 100%;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 15px;
+      border-radius: var(--radius-sm);
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn-primary:hover {
+      background: #251b11;
+    }
+    .btn-primary:disabled {
+      background: #cbd5e0;
+      cursor: not-allowed;
+    }
+
+    /* Detail View Modal Specifics */
+    .view-letter-content {
+      border-radius: var(--radius-md);
+      padding: 26px;
+      margin-bottom: 20px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.04);
+      min-height: 220px;
+      position: relative;
+    }
+    .view-letter-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px dashed rgba(0,0,0,0.18);
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+    .view-message {
+      font-family: 'Nanum Myeongjo', serif;
+      font-size: 1.15rem;
+      line-height: 1.85;
+      white-space: pre-wrap;
+      word-break: keep-all;
+      overflow-wrap: anywhere;
+      color: #241a10;
+    }
+    .view-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 18px;
+    }
+    .btn-secondary {
+      background: #edf2f7;
+      color: #3b2d20;
+      border: none;
+      padding: 11px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-secondary:hover {
+      background: #e2e8f0;
+    }
+    .btn-danger {
+      background: #fff5f5;
+      color: #e53e3e;
+      border: 1px solid #feb2b2;
+      padding: 11px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Toast */
+    .toast-container {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+      width: max-content;
+      max-width: 90vw;
+    }
+    .toast {
+      background: rgba(36, 26, 16, 0.95);
+      color: #fff;
+      padding: 13px 26px;
+      border-radius: 30px;
+      font-size: 1rem;
+      font-weight: 600;
+      box-shadow: var(--shadow-lg);
+      backdrop-filter: blur(8px);
+      animation: toastSlideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      text-align: center;
+    }
+    @keyframes toastSlideDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Particle animation */
+    .particle {
+      position: fixed;
+      pointer-events: none;
+      z-index: 3000;
+      animation: floatUp 0.8s ease-out forwards;
+    }
+    @keyframes floatUp {
+      0% { opacity: 1; transform: translate(0, 0) scale(1); }
+      100% { opacity: 0; transform: translate(var(--x, 0px), -60px) scale(1.6); }
+    }
+
+    /* =========================================================
+       DEVICE-SPECIFIC RESPONSIVE VISIBILITY & UX OPTIMIZATIONS
+       ========================================================= */
+
+    /* 📱 1. Tablet (641px ~ 1024px) */
+    @media (min-width: 641px) and (max-width: 1024px) {
+      .header { padding: 28px 24px 12px; }
+      .title-container h1 { font-size: 2.2rem; }
+      .board-container { padding: 28px 24px 120px; }
+      .letters-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 56px 24px;
+      }
+      .letter-card::before { left: -24px; right: -24px; }
+      .modal-card { max-width: 480px; }
+    }
+
+    /* 📱 2. Smartphone / Mobile (<= 640px) */
+    @media (max-width: 640px) {
+      .header { padding: 20px 16px 8px; }
+      .title-container h1 { font-size: 1.85rem; }
+      .subtitle { font-size: 0.88rem; }
+      
+      .board-container {
+        padding: 20px 14px 110px;
+      }
+
+      /* 2-Column Balanced Grid on Phones */
+      .letters-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 48px 12px;
+      }
+
+      .letter-card {
+        min-height: 220px;
+        padding: 22px 12px 12px;
+        border-radius: 4px 14px 14px 14px;
+      }
+
+      .letter-card::before {
+        left: -12px;
+        right: -12px;
+        height: 3.5px;
+      }
+
+      .wooden-clip {
+        width: 13px;
+        height: 30px;
+        top: -14px;
+      }
+
+      .author-name {
+        max-width: 76px;
+        font-size: 0.95rem;
+      }
+
+      .relation-badge {
+        max-width: 52px;
+        font-size: 0.72rem;
+        padding: 2px 6px;
+      }
+
+      .letter-body {
+        font-size: 0.92rem;
+        line-height: 1.55;
+        -webkit-line-clamp: 5;
+      }
+
+      .cute-sticker {
+        font-size: 1.2rem;
+        bottom: 8px;
+        right: 8px;
+      }
+
+      .like-btn {
+        padding: 5px 9px;
+        min-height: 34px;
+        font-size: 0.82rem;
+      }
+
+      .created-date {
+        font-size: 0.72rem;
+      }
+
+      .floating-write-btn {
+        bottom: max(20px, env(safe-area-inset-bottom, 20px));
+        right: 18px;
+        padding: 13px 22px;
+        font-size: 1rem;
+      }
+
+      /* Mobile Bottom Sheet Modal */
+      .modal-overlay {
+        align-items: flex-end;
+        padding: 0;
+      }
+
+      .modal-card {
+        border-radius: 24px 24px 0 0;
+        max-height: 88vh;
+        padding: 22px 18px max(24px, env(safe-area-inset-bottom, 24px));
+        transform: translateY(100%);
+      }
+
+      .modal-overlay.active .modal-card {
+        transform: translateY(0);
+      }
+
+      /* Prevent iOS Safari 16px auto-zoom on input focus */
+      .form-input, .form-textarea {
+        font-size: 16px;
+        padding: 12px 14px;
+      }
+
+      .view-letter-content {
+        padding: 18px 14px;
+      }
+
+      .view-message {
+        font-size: 1.05rem;
+        line-height: 1.75;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="title-container">
+      <h1 id="appTitle">우리들의 마음 우체국 💌</h1>
+      <p class="subtitle" id="appSubtitle">선생님께 따뜻한 감사와 응원의 편지를 남겨주세요</p>
+    </div>
+  </header>
+
+  <!-- Board Area (Responsive Multi-Row Clothesline Grid) -->
+  <main class="board-container" id="boardContainer">
+    <div class="letters-grid" id="board">
+      <!-- Letter cards will be dynamically rendered here -->
+    </div>
+    <div id="emptyState" class="empty-state" style="display: none;">
+      <div class="empty-icon">📮</div>
+      <p>아직 걸려있는 편지가 없습니다.<br>첫 번째 따뜻한 마음을 빨랫줄에 걸어보세요!</p>
+    </div>
+  </main>
+
+  <!-- Floating Write Button -->
+  <button class="floating-write-btn" id="openWriteBtn" aria-label="편지 쓰기">
+    <span>✏️</span>
+    <span>편지 쓰기</span>
+  </button>
+
+  <!-- Write / Edit Modal -->
+  <div class="modal-overlay" id="writeModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title" id="writeModalTitle">마음 편지 쓰기 💌</h2>
+        <button class="modal-close-btn" id="closeWriteBtn">&times;</button>
+      </div>
+      <form id="writeForm">
+        <input type="hidden" id="editLetterId" value="">
+        <div class="form-group">
+          <label class="form-label" for="authorInput">작성자 (이름 또는 별명)</label>
+          <input type="text" id="authorInput" class="form-input" placeholder="예: 3반 김민우" maxlength="20" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="relationInput">소속 또는 관계</label>
+          <input type="text" id="relationInput" class="form-input" placeholder="예: 3반 학생, 동료교사" maxlength="20" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="messageInput">전하고 싶은 마음</label>
+          <textarea id="messageInput" class="form-textarea" placeholder="선생님께 따뜻한 감사와 추억의 메시지를 적어주세요..." maxlength="500" required></textarea>
+          <div class="char-count"><span id="charCount">0</span> / 500자</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">편지지 색상</label>
+          <div class="color-options" id="colorPicker">
+            <div class="color-option selected" data-color="#fff6b8" style="background: #fff6b8;"></div>
+            <div class="color-option" data-color="#fde2e4" style="background: #fde2e4;"></div>
+            <div class="color-option" data-color="#e2ece9" style="background: #e2ece9;"></div>
+            <div class="color-option" data-color="#e0eafc" style="background: #e0eafc;"></div>
+            <div class="color-option" data-color="#f3e8ff" style="background: #f3e8ff;"></div>
+            <div class="color-option" data-color="#fef3c7" style="background: #fef3c7;"></div>
+          </div>
+        </div>
+        <div class="form-group" id="passwordGroup">
+          <label class="form-label" for="passwordInput">비밀번호 (4자리 - 수정/삭제용)</label>
+          <input type="password" id="passwordInput" class="form-input" placeholder="4자리 숫자/문자 입력" maxlength="4" minlength="4" required>
+        </div>
+        <button type="submit" class="btn-primary" id="saveLetterBtn">
+          <span>📮</span> <span id="saveBtnText">빨랫줄에 편지 걸기</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Detail View Modal -->
+  <div class="modal-overlay" id="viewModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">마음 편지 읽기 📖</h2>
+        <button class="modal-close-btn" id="closeViewBtn">&times;</button>
+      </div>
+      <div class="view-letter-content" id="viewCardBox">
+        <div class="view-letter-header">
+          <div>
+            <span class="author-name" id="viewAuthor" style="font-size: 1.25rem; max-width: 200px;"></span>
+            <span class="relation-badge" id="viewRelation" style="margin-left: 8px; max-width: 140px;"></span>
+          </div>
+          <span class="created-date" id="viewDate"></span>
+        </div>
+        <div class="view-message" id="viewMessage"></div>
+        <div class="cute-sticker" id="viewSticker"></div>
+      </div>
+      <div class="view-actions">
+        <button class="like-btn" id="viewLikeBtn">
+          <span class="like-icon">❤️</span>
+          <span id="viewLikeCount">0</span>
+        </button>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-secondary" id="openEditBtn">✏️ 수정</button>
+          <button class="btn-danger" id="openDeleteBtn">🗑️ 삭제</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Password Confirm Modal for Edit/Delete (Supports Author Password & Admin Master PIN) -->
+  <div class="modal-overlay" id="passwordConfirmModal">
+    <div class="modal-card" style="max-width: 380px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="confirmModalTitle">비밀번호 확인 🔒</h3>
+        <button class="modal-close-btn" id="closeConfirmBtn">&times;</button>
+      </div>
+      <p style="font-size: 0.92rem; color: #555; margin-bottom: 14px; line-height: 1.5;" id="confirmModalDesc">
+        편지 작성 시 설정한 4자리 비밀번호 (또는 관리자 마스터 PIN)를 입력해주세요.
+      </p>
+      <div class="form-group">
+        <input type="password" id="confirmPasswordInput" class="form-input" placeholder="4자리 비밀번호 또는 마스터 PIN" maxlength="4" autofocus>
+      </div>
+      <div style="display: flex; gap: 8px; margin-top: 16px;">
+        <button type="button" class="btn-secondary" id="confirmPasswordCancelBtn" style="flex: 1;">취소</button>
+        <button type="button" class="btn-primary" id="confirmPasswordSubmitBtn" style="flex: 1; margin-top: 0;">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Client Script -->
+  <script>
+    (function() {
+      // Stickers pool (행운의 네잎클로버, 벚꽃, 반짝 하트, 튤립, 작은 별, 미니 편지봉투 등)
+      const STICKERS = ['🍀', '🌸', '💖', '🌷', '🌟', '💌', '🐥', '🎈', '🧸', '🌈', '🍓', '🌻', '🐾', '🎀'];
+
+      // State
+      let letters = [];
+      let currentViewingId = null;
+      let pendingAction = null; // { type: 'edit' | 'delete', id: string }
+      let selectedColor = '#fff6b8';
+
+      // Elements
+      const board = document.getElementById('board');
+      const emptyState = document.getElementById('emptyState');
+      const openWriteBtn = document.getElementById('openWriteBtn');
+      const writeModal = document.getElementById('writeModal');
+      const closeWriteBtn = document.getElementById('closeWriteBtn');
+      const writeForm = document.getElementById('writeForm');
+      const editLetterId = document.getElementById('editLetterId');
+      const authorInput = document.getElementById('authorInput');
+      const relationInput = document.getElementById('relationInput');
+      const messageInput = document.getElementById('messageInput');
+      const charCount = document.getElementById('charCount');
+      const passwordInput = document.getElementById('passwordInput');
+      const passwordGroup = document.getElementById('passwordGroup');
+      const colorOptions = document.querySelectorAll('.color-option');
+      const saveBtnText = document.getElementById('saveBtnText');
+      const saveLetterBtn = document.getElementById('saveLetterBtn');
+
+      const viewModal = document.getElementById('viewModal');
+      const closeViewBtn = document.getElementById('closeViewBtn');
+      const viewCardBox = document.getElementById('viewCardBox');
+      const viewAuthor = document.getElementById('viewAuthor');
+      const viewRelation = document.getElementById('viewRelation');
+      const viewDate = document.getElementById('viewDate');
+      const viewMessage = document.getElementById('viewMessage');
+      const viewSticker = document.getElementById('viewSticker');
+      const viewLikeBtn = document.getElementById('viewLikeBtn');
+      const viewLikeCount = document.getElementById('viewLikeCount');
+      const openEditBtn = document.getElementById('openEditBtn');
+      const openDeleteBtn = document.getElementById('openDeleteBtn');
+
+      const passwordConfirmModal = document.getElementById('passwordConfirmModal');
+      const confirmPasswordInput = document.getElementById('confirmPasswordInput');
+      const confirmPasswordSubmitBtn = document.getElementById('confirmPasswordSubmitBtn');
+      const confirmPasswordCancelBtn = document.getElementById('confirmPasswordCancelBtn');
+      const closeConfirmBtn = document.getElementById('closeConfirmBtn');
+      const toastContainer = document.getElementById('toastContainer');
+
+      // Helper to get consistent sticker for a letter
+      function getStickerForLetter(letter, idx) {
+        if (!letter.id) return STICKERS[idx % STICKERS.length];
+        let hash = 0;
+        for (let i = 0; i < letter.id.length; i++) {
+          hash = ((hash << 5) - hash + letter.id.charCodeAt(i)) | 0;
+        }
+        return STICKERS[Math.abs(hash) % STICKERS.length];
+      }
+
+      // Toast Notification
+      function showToast(msg) {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = msg;
+        toastContainer.appendChild(toast);
+        setTimeout(() => toast.remove(), 2500);
+      }
+
+      // Floating Heart Particles
+      function createHeartParticle(x, y) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.textContent = '❤️';
+        p.style.left = (x - 10) + 'px';
+        p.style.top = (y - 10) + 'px';
+        p.style.setProperty('--x', (Math.random() * 40 - 20) + 'px');
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 800);
+      }
+
+      // Backend Service Bridge (Google Apps Script or LocalStorage Fallback)
+      const backend = {
+        isGAS: typeof google !== 'undefined' && google.script && google.script.run,
+        getLetters: function(cb, errCb) {
+          if (this.isGAS) {
+            google.script.run
+              .withSuccessHandler(cb)
+              .withFailureHandler(errCb || console.error)
+              .getLetters();
+          } else {
+            // LocalStorage Mock
+            const local = JSON.parse(localStorage.getItem('gas_mock_letters') || '[]');
+            setTimeout(() => cb(local), 100);
+          }
+        },
+        addLetter: function(payload, cb, errCb) {
+          if (this.isGAS) {
+            google.script.run
+              .withSuccessHandler(cb)
+              .withFailureHandler(errCb || alert)
+              .addLetter(payload);
+          } else {
+            const list = JSON.parse(localStorage.getItem('gas_mock_letters') || '[]');
+            const newLetter = {
+              id: 'letter_' + Date.now(),
+              authorName: payload.authorName,
+              relationship: payload.relationship,
+              message: payload.message,
+              color: payload.color,
+              likes: 0,
+              createdAt: new Date().toISOString(),
+              _mockPassword: payload.password
+            };
+            list.push(newLetter);
+            localStorage.setItem('gas_mock_letters', JSON.stringify(list));
+            setTimeout(() => cb(newLetter), 150);
+          }
+        },
+        updateLetter: function(id, password, updateData, cb, errCb) {
+          if (this.isGAS) {
+            google.script.run
+              .withSuccessHandler(cb)
+              .withFailureHandler(errCb || alert)
+              .updateLetter(id, password, updateData);
+          } else {
+            const list = JSON.parse(localStorage.getItem('gas_mock_letters') || '[]');
+            const item = list.find(l => l.id === id);
+            if (!item) return errCb(new Error('편지를 찾을 수 없습니다.'));
+            const isAdmin = (password === '0000');
+            if (!isAdmin && item._mockPassword && item._mockPassword !== password) {
+              return errCb(new Error('비밀번호가 일치하지 않습니다.'));
+            }
+            item.relationship = updateData.relationship;
+            item.message = updateData.message;
+            item.color = updateData.color;
+            localStorage.setItem('gas_mock_letters', JSON.stringify(list));
+            setTimeout(() => cb(item), 150);
+          }
+        },
+        deleteLetter: function(id, password, cb, errCb) {
+          if (this.isGAS) {
+            google.script.run
+              .withSuccessHandler(cb)
+              .withFailureHandler(errCb || alert)
+              .deleteLetter(id, password);
+          } else {
+            let list = JSON.parse(localStorage.getItem('gas_mock_letters') || '[]');
+            const item = list.find(l => l.id === id);
+            if (!item) return errCb(new Error('편지를 찾을 수 없습니다.'));
+            const isAdmin = (password === '0000');
+            if (!isAdmin && item._mockPassword && item._mockPassword !== password) {
+              return errCb(new Error('비밀번호가 일치하지 않습니다.'));
+            }
+            list = list.filter(l => l.id !== id);
+            localStorage.setItem('gas_mock_letters', JSON.stringify(list));
+            setTimeout(() => cb({ success: true, id, isAdmin }), 150);
+          }
+        },
+        likeLetter: function(id, cb, errCb) {
+          if (this.isGAS) {
+            google.script.run
+              .withSuccessHandler(cb)
+              .withFailureHandler(errCb || console.error)
+              .likeLetter(id);
+          } else {
+            const list = JSON.parse(localStorage.getItem('gas_mock_letters') || '[]');
+            const item = list.find(l => l.id === id);
+            if (item) {
+              item.likes = (item.likes || 0) + 1;
+              localStorage.setItem('gas_mock_letters', JSON.stringify(list));
+              setTimeout(() => cb({ success: true, id, likes: item.likes }), 50);
+            }
+          }
+        }
+      };
+
+      // Render Letters
+      function renderLetters() {
+        board.innerHTML = '';
+        if (!letters || letters.length === 0) {
+          emptyState.style.display = 'block';
+          return;
+        }
+        emptyState.style.display = 'none';
+
+        letters.forEach((letter, idx) => {
+          const card = document.createElement('div');
+          card.className = 'letter-card';
+          card.style.backgroundColor = letter.color || '#fff6b8';
+          card.style.animationDelay = `${(idx % 5) * 0.3}s`;
+          card.style.animationDuration = `${3.6 + (idx % 4) * 0.4}s`;
+
+          // Clip
+          const clip = document.createElement('div');
+          clip.className = 'wooden-clip';
+
+          // Twinkle Sparkles
+          const sparkle = document.createElement('div');
+          sparkle.className = 'sparkle-twinkle';
+          sparkle.textContent = (idx % 2 === 0) ? '✨' : '⭐';
+          sparkle.style.top = (6 + (idx % 3) * 6) + 'px';
+          sparkle.style.right = (10 + (idx % 4) * 8) + 'px';
+          sparkle.style.animationDelay = `${(idx * 0.5) % 2.5}s`;
+
+          // Cute Sticker
+          const stickerChar = getStickerForLetter(letter, idx);
+          const sticker = document.createElement('div');
+          sticker.className = 'cute-sticker';
+          sticker.textContent = stickerChar;
+          const rot = ((idx % 5) * 4 - 8) + 'deg';
+          sticker.style.setProperty('--sticker-rot', rot);
+
+          const header = document.createElement('div');
+          header.className = 'letter-header';
+          header.innerHTML = `
+            <span class="author-name" title="${escapeHtml(letter.authorName)}">${escapeHtml(letter.authorName)}</span>
+            <span class="relation-badge" title="${escapeHtml(letter.relationship)}">${escapeHtml(letter.relationship)}</span>
+          `;
+
+          const body = document.createElement('div');
+          body.className = 'letter-body';
+          body.textContent = letter.message;
+
+          const footer = document.createElement('div');
+          footer.className = 'letter-footer';
+          const dateStr = letter.createdAt ? new Date(letter.createdAt).toLocaleDateString('ko-KR') : '';
+          footer.innerHTML = `
+            <button class="like-btn" data-id="${letter.id}">
+              <span class="like-icon">❤️</span>
+              <span>${letter.likes || 0}</span>
+            </button>
+            <span class="created-date">${dateStr}</span>
+          `;
+
+          card.appendChild(clip);
+          card.appendChild(sparkle);
+          card.appendChild(sticker);
+          card.appendChild(header);
+          card.appendChild(body);
+          card.appendChild(footer);
+
+          // Card Click
+          card.addEventListener('click', (e) => {
+            if (e.target.closest('.like-btn')) return;
+            openViewModal(letter.id);
+          });
+
+          // Like Click
+          const cardLikeBtn = footer.querySelector('.like-btn');
+          cardLikeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const rect = cardLikeBtn.getBoundingClientRect();
+            createHeartParticle(rect.left + rect.width / 2, rect.top);
+            letter.likes = (letter.likes || 0) + 1;
+            cardLikeBtn.querySelector('span:last-child').textContent = letter.likes;
+            backend.likeLetter(letter.id, (res) => {
+              if (res && res.likes) letter.likes = res.likes;
+            });
+          });
+
+          board.appendChild(card);
+        });
+      }
+
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      // Load Letters
+      function fetchLetters() {
+        backend.getLetters((data) => {
+          letters = data || [];
+          renderLetters();
+        });
+      }
+
+      // Modal Handlers
+      openWriteBtn.addEventListener('click', () => {
+        editLetterId.value = '';
+        authorInput.value = '';
+        authorInput.disabled = false;
+        relationInput.value = '';
+        messageInput.value = '';
+        charCount.textContent = '0';
+        passwordInput.value = '';
+        passwordGroup.style.display = 'block';
+        passwordInput.required = true;
+        document.getElementById('writeModalTitle').textContent = '마음 편지 쓰기 💌';
+        saveBtnText.textContent = '빨랫줄에 편지 걸기';
+        selectColor('#fff6b8');
+        writeModal.classList.add('active');
+      });
+
+      closeWriteBtn.addEventListener('click', () => writeModal.classList.remove('active'));
+
+      // Color Picker
+      colorOptions.forEach(opt => {
+        opt.addEventListener('click', () => selectColor(opt.dataset.color));
+      });
+
+      function selectColor(color) {
+        selectedColor = color;
+        colorOptions.forEach(opt => {
+          opt.classList.toggle('selected', opt.dataset.color === color);
+        });
+      }
+
+      // Char Counter
+      messageInput.addEventListener('input', () => {
+        charCount.textContent = messageInput.value.length;
+      });
+
+      // Write Form Submit
+      writeForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        saveLetterBtn.disabled = true;
+
+        const isEdit = !!editLetterId.value;
+        const payload = {
+          authorName: authorInput.value.trim(),
+          relationship: relationInput.value.trim(),
+          message: messageInput.value.trim(),
+          color: selectedColor,
+          password: passwordInput.value.trim()
+        };
+
+        if (isEdit) {
+          backend.updateLetter(editLetterId.value, payload.password, payload, (updated) => {
+            saveLetterBtn.disabled = false;
+            writeModal.classList.remove('active');
+            showToast('편지가 수정되었습니다! ✨');
+            const idx = letters.findIndex(l => l.id === updated.id);
+            if (idx !== -1) letters[idx] = updated;
+            renderLetters();
+          }, (err) => {
+            saveLetterBtn.disabled = false;
+            showToast(err.message || '수정에 실패했습니다.');
+          });
+        } else {
+          backend.addLetter(payload, (newLetter) => {
+            saveLetterBtn.disabled = false;
+            writeModal.classList.remove('active');
+            showToast('편지가 빨랫줄에 걸렸습니다! 💌');
+            letters.push(newLetter);
+            renderLetters();
+            if (typeof confetti === 'function') {
+              confetti({ particleCount: 60, spread: 60, origin: { y: 0.7 } });
+            }
+          }, (err) => {
+            saveLetterBtn.disabled = false;
+            showToast(err.message || '편지 등록에 실패했습니다.');
+          });
+        }
+      });
+
+      // View Modal
+      function openViewModal(id) {
+        const letter = letters.find(l => l.id === id);
+        if (!letter) return;
+        currentViewingId = id;
+
+        viewAuthor.textContent = letter.authorName;
+        viewRelation.textContent = letter.relationship;
+        viewDate.textContent = letter.createdAt ? new Date(letter.createdAt).toLocaleDateString('ko-KR') : '';
+        viewMessage.textContent = letter.message;
+        viewLikeCount.textContent = letter.likes || 0;
+        viewCardBox.style.backgroundColor = letter.color || '#fff6b8';
+
+        const idx = letters.findIndex(l => l.id === id);
+        viewSticker.textContent = getStickerForLetter(letter, idx >= 0 ? idx : 0);
+
+        viewModal.classList.add('active');
+
+        if (typeof confetti === 'function') {
+          confetti({ particleCount: 40, spread: 50, origin: { y: 0.6 } });
+        }
+      }
+
+      closeViewBtn.addEventListener('click', () => viewModal.classList.remove('active'));
+
+      viewLikeBtn.addEventListener('click', (e) => {
+        const rect = viewLikeBtn.getBoundingClientRect();
+        createHeartParticle(rect.left + rect.width / 2, rect.top);
+        const letter = letters.find(l => l.id === currentViewingId);
+        if (letter) {
+          letter.likes = (letter.likes || 0) + 1;
+          viewLikeCount.textContent = letter.likes;
+          backend.likeLetter(letter.id, () => renderLetters());
+        }
+      });
+
+      // Edit / Delete Actions via Password Modal
+      openEditBtn.addEventListener('click', () => {
+        pendingAction = { type: 'edit', id: currentViewingId };
+        viewModal.classList.remove('active');
+        confirmPasswordInput.value = '';
+        document.getElementById('confirmModalTitle').textContent = '편지 수정 비밀번호 🔒';
+        passwordConfirmModal.classList.add('active');
+        confirmPasswordInput.focus();
+      });
+
+      openDeleteBtn.addEventListener('click', () => {
+        pendingAction = { type: 'delete', id: currentViewingId };
+        viewModal.classList.remove('active');
+        confirmPasswordInput.value = '';
+        document.getElementById('confirmModalTitle').textContent = '편지 삭제 비밀번호 🗑️';
+        passwordConfirmModal.classList.add('active');
+        confirmPasswordInput.focus();
+      });
+
+      closeConfirmBtn.addEventListener('click', () => passwordConfirmModal.classList.remove('active'));
+      confirmPasswordCancelBtn.addEventListener('click', () => passwordConfirmModal.classList.remove('active'));
+
+      confirmPasswordSubmitBtn.addEventListener('click', () => {
+        const pwd = confirmPasswordInput.value.trim();
+        if (pwd.length !== 4) {
+          showToast('비밀번호 4자리를 입력해주세요.');
+          return;
+        }
+
+        if (pendingAction.type === 'delete') {
+          confirmPasswordSubmitBtn.disabled = true;
+          backend.deleteLetter(pendingAction.id, pwd, (res) => {
+            confirmPasswordSubmitBtn.disabled = false;
+            passwordConfirmModal.classList.remove('active');
+            if (res && res.isAdmin) {
+              showToast('관리자 권한으로 편지가 삭제되었습니다. 🗑️');
+            } else {
+              showToast('편지가 삭제되었습니다.');
+            }
+            letters = letters.filter(l => l.id !== pendingAction.id);
+            renderLetters();
+          }, (err) => {
+            confirmPasswordSubmitBtn.disabled = false;
+            showToast(err.message || '비밀번호가 일치하지 않습니다.');
+          });
+        } else if (pendingAction.type === 'edit') {
+          const letter = letters.find(l => l.id === pendingAction.id);
+          if (!letter) return;
+          passwordConfirmModal.classList.remove('active');
+
+          editLetterId.value = letter.id;
+          authorInput.value = letter.authorName;
+          authorInput.disabled = true;
+          relationInput.value = letter.relationship;
+          messageInput.value = letter.message;
+          charCount.textContent = letter.message.length;
+          passwordInput.value = pwd;
+          passwordGroup.style.display = 'block';
+          selectColor(letter.color || '#fff6b8');
+          document.getElementById('writeModalTitle').textContent = '편지 수정하기 ✏️';
+          saveBtnText.textContent = '수정 완료하기';
+          writeModal.classList.add('active');
+        }
+      });
+
+      // Initialize
+      fetchLetters();
+    })();
+  </script>
+</body>
+</html>
